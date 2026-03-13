@@ -5,8 +5,7 @@ import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { Lock, Mail, Eye, EyeOff } from "lucide-react"
 
-import { loginUser } from "@/lib/api"
-import { saveToken } from "@/lib/auth"
+import { useAuth } from "@/hooks/useAuth"
 import AuthHeader from "@/components/auth/auth-header"
 import RoleToggle, { type AuthRole } from "@/components/auth/role-toggle"
 import { Button } from "@/components/ui/button"
@@ -21,27 +20,17 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState("")
+  const { login, loading, error } = useAuth()
 
   async function handleLogin() {
-    try {
-      setLoading(true)
-      setError("")
+    const user = await login(email, password)
 
-      const data = await loginUser(email, password)
-
-      saveToken(data.access_token)
-
-      if (role === "student") {
+    if (user) {
+      if (user.role === "student") {
         router.push("/student")
       } else {
         router.push("/teacher")
       }
-    } catch (err: any) {
-      setError(err.message)
-    } finally {
-      setLoading(false)
     }
   }
 

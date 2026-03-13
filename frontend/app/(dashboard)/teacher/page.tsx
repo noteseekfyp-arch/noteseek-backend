@@ -1,7 +1,7 @@
 "use client"
 
-import StatCard from "@/components/stat-card"
-import TeacherCourseCard from "@/components/teacher-course-card"
+import StatCard from "@/components/stats/stat-card"
+import { TeacherCourseCard } from "@/components/course/teacher-course-card"
 import { Button } from "@/components/ui/button"
 import {
   Users,

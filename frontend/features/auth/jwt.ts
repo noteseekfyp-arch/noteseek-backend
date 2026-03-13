@@ -1,10 +1,5 @@
 import { jwtDecode } from "jwt-decode"
-
-export interface JWTPayload {
-    sub: string
-    email: string
-    role: string
-}
+import type { JWTPayload } from "@/types/user"
 
 export function getRoleFromToken(token: string): string | null {
     try {

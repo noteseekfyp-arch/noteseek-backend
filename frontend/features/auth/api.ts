@@ -1,4 +1,4 @@
-const API_URL = "http://127.0.0.1:8000"
+import { API_URL } from "@/config/api"
 
 export async function loginUser(email: string, password: string) {
     const formData = new URLSearchParams()
@@ -31,6 +31,20 @@ export async function registerUser(data: any) {
 
     if (!res.ok) {
         throw new Error("Registration failed")
+    }
+
+    return res.json()
+}
+
+export async function getCurrentUser(token: string) {
+    const res = await fetch(`${API_URL}/users/me`, {
+        headers: {
+            Authorization: `Bearer ${token}`
+        }
+    })
+
+    if (!res.ok) {
+        throw new Error("Failed to fetch user profile")
     }
 
     return res.json()

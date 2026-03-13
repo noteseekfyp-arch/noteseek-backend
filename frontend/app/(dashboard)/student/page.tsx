@@ -1,6 +1,6 @@
 "use client"
 
-import CourseCard from "@/components/course-card"
+import CourseCard from "@/components/course/course-card"
 import Link from "next/link"
 import { BadgeCheck, Globe, SlidersHorizontal } from "lucide-react"
 

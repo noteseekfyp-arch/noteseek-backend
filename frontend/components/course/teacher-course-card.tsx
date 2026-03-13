@@ -1,22 +1,22 @@
- "use client"
+"use client"
 
 import { Card, CardContent } from "@/components/ui/card"
 import { Users, Clock, Tag } from "lucide-react"
- 
- interface TeacherCourseCardProps {
-   title: string
-   students: number
-   updated: string
-   category: string
- }
- 
- export default function TeacherCourseCard({
-   title,
-   students,
-   updated,
-   category,
- }: TeacherCourseCardProps) {
-   return (
+
+interface TeacherCourseCardProps {
+  title: string
+  students: number
+  updated: string
+  category: string
+}
+
+export function TeacherCourseCard({
+  title,
+  students,
+  updated,
+  category,
+}: TeacherCourseCardProps) {
+  return (
     <Card className="overflow-hidden hover:shadow-lg transition bg-white">
       <div className="relative h-40 bg-muted/70">
         <div className="absolute inset-0 flex items-center justify-center text-muted-foreground text-sm">
@@ -46,5 +46,5 @@ import { Users, Clock, Tag } from "lucide-react"
         </div>
       </CardContent>
     </Card>
-   )
- }
+  )
+}

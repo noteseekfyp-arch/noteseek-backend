@@ -1,10 +1,6 @@
-import { jwtDecode } from "jwt-decode"
-
-export function saveToken(token: string) {
-    const decoded: any = jwtDecode(token)
-
+export function saveToken(token: string, role: string) {
     document.cookie = `access_token=${token}; path=/`
-    document.cookie = `user_role=${decoded.role}; path=/`
+    document.cookie = `user_role=${role}; path=/`
 }
 
 export function logout() {

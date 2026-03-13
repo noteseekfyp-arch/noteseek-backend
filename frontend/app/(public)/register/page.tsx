@@ -3,7 +3,7 @@
 import Link from "next/link"
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { registerUser } from "@/lib/api"
+import { registerUser } from "@/features/auth/api"
 import {
   Share2,
   GraduationCap,
@@ -19,7 +19,13 @@ import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Select } from "@/components/ui/select"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 
 export default function RegisterPage() {
   const router = useRouter()
@@ -174,11 +180,15 @@ export default function RegisterPage() {
 
               <div className="space-y-2">
                 <Label htmlFor="reg-university">University / Institution</Label>
-                <Select id="reg-university" value={university} onChange={(e: any) => setUniversity(e.target.value)}>
-                  <option value="">Select your university</option>
-                  <option value="stanford">Stanford University</option>
-                  <option value="mit">MIT</option>
-                  <option value="harvard">Harvard</option>
+                <Select value={university} onValueChange={setUniversity}>
+                  <SelectTrigger id="reg-university">
+                    <SelectValue placeholder="Select your university" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="stanford">Stanford University</SelectItem>
+                    <SelectItem value="mit">MIT</SelectItem>
+                    <SelectItem value="harvard">Harvard</SelectItem>
+                  </SelectContent>
                 </Select>
               </div>
 
@@ -195,11 +205,15 @@ export default function RegisterPage() {
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="reg-semester">Semester / Level</Label>
-                  <Select id="reg-semester" value={semester} onChange={(e: any) => setSemester(e.target.value)}>
-                    <option value="">Choose semester</option>
-                    <option value="1">Semester 1</option>
-                    <option value="2">Semester 2</option>
-                    <option value="3">Semester 3</option>
+                  <Select value={semester} onValueChange={setSemester}>
+                    <SelectTrigger id="reg-semester">
+                      <SelectValue placeholder="Choose semester" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="1">Semester 1</SelectItem>
+                      <SelectItem value="2">Semester 2</SelectItem>
+                      <SelectItem value="3">Semester 3</SelectItem>
+                    </SelectContent>
                   </Select>
                 </div>
               </div>
