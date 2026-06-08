@@ -1,105 +1,113 @@
 "use client"
 
+import { useEffect } from "react"
+import Link from "next/link"
 import StatCard from "@/components/stats/stat-card"
 import { TeacherCourseCard } from "@/components/course/teacher-course-card"
+import { CreateCourseModal } from "@/components/course/create-course-modal"
 import { Button } from "@/components/ui/button"
-import {
-  Users,
-  BookOpenCheck,
-  ClipboardList,
-  Star,
-  Plus,
-} from "lucide-react"
+import { Users, BookOpenCheck, ClipboardList, Star, Plus } from "lucide-react"
+import { useCourses } from "@/features/courses/hooks"
+
+function formatCourseUpdated(iso: string | null): string {
+  if (!iso) return "Recently"
+  const d = new Date(iso)
+  if (Number.isNaN(d.getTime())) return "Recently"
+  return d.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })
+}
 
 export default function TeacherDashboard() {
+  const { courses, loading, error, fetchCourses, addCourse } = useCourses()
+
+  useEffect(() => {
+    void fetchCourses()
+  }, [fetchCourses])
+
+  const totalStudents = courses.reduce((sum, c) => sum + (c.student_count ?? 0), 0)
+
+  const afterCourseCreated = (c: Parameters<typeof addCourse>[0]) => {
+    addCourse(c)
+    void fetchCourses()
+  }
+
   return (
     <div className="space-y-10">
-      {/* Header */}
-      <div className="flex justify-between items-start">
+      <div className="flex justify-between items-start gap-4 flex-col sm:flex-row sm:items-center">
         <div>
-          <h1 className="text-3xl font-bold">My Courses</h1>
+          <h1 className="text-3xl font-bold">Dashboard</h1>
           <p className="text-muted-foreground">
-            Manage and organize your academic materials across all departments.
+            Your courses load from the API. Use{" "}
+            <Link href="/teacher/courses" className="text-primary underline-offset-4 hover:underline">
+              My Courses
+            </Link>{" "}
+            for the full list.
           </p>
         </div>
 
-        <div className="flex gap-3">
-          <Button variant="outline">Filter</Button>
-          <Button>
-            <Plus className="mr-2 size-4" />
-            New Course
+        <div className="flex gap-3 shrink-0">
+          <Button variant="outline" type="button" disabled title="Not implemented">
+            Filter
           </Button>
+          <CreateCourseModal onCourseCreated={afterCourseCreated}>
+            <Button>
+              <Plus className="mr-2 size-4" />
+              New Course
+            </Button>
+          </CreateCourseModal>
         </div>
       </div>
 
-      {/* Stats Section */}
+      {error && (
+        <p className="text-sm text-destructive" role="alert">
+          {error}
+        </p>
+      )}
+
       <div className="grid md:grid-cols-4 gap-6">
-        <StatCard
-          title="Total Students"
-          value="183"
-          icon={Users}
-        />
+        <StatCard title="Total Students" value={String(totalStudents)} icon={Users} />
         <StatCard
           title="Active Courses"
-          value="8"
+          value={String(courses.length)}
           icon={BookOpenCheck}
           iconBgClassName="bg-emerald-50 text-emerald-500"
         />
         <StatCard
           title="Pending Submissions"
-          value="42"
+          value="—"
           icon={ClipboardList}
           iconBgClassName="bg-amber-50 text-amber-500"
         />
-        <StatCard
-          title="Avg. Performance"
-          value="88%"
-          icon={Star}
-          iconBgClassName="bg-violet-50 text-violet-500"
-        />
+        <StatCard title="Avg. Performance" value="—" icon={Star} iconBgClassName="bg-violet-50 text-violet-500" />
       </div>
 
-      {/* Courses Grid */}
-      <div className="grid md:grid-cols-4 gap-6 items-stretch">
-        <TeacherCourseCard
-          title="Advanced Mathematics"
-          students={32}
-          updated="2h ago"
-          category="Calculus"
-        />
+      {loading ? (
+        <p className="text-muted-foreground text-sm">Loading courses…</p>
+      ) : (
+        <div className="grid md:grid-cols-4 gap-6 items-stretch">
+          {courses.map((course) => (
+            <TeacherCourseCard
+              key={course.id}
+              title={course.title}
+              students={course.student_count}
+              updated={formatCourseUpdated(course.updated_at)}
+              category={course.department}
+              href={`/teacher/courses/${course.id}`}
+            />
+          ))}
 
-        <TeacherCourseCard
-          title="Quantum Physics"
-          students={28}
-          updated="1d ago"
-          category="Theoretical"
-        />
-
-        <TeacherCourseCard
-          title="Linear Algebra"
-          students={45}
-          updated="3d ago"
-          category="Math"
-        />
-
-        <TeacherCourseCard
-          title="Intro to Calculus"
-          students={50}
-          updated="5d ago"
-          category="General"
-        />
-
-        {/* Add New Course Card */}
-        <div className="border-2 border-dashed rounded-xl flex flex-col items-center justify-center h-64 bg-muted/40 hover:bg-muted/60 transition cursor-pointer">
-          <div className="flex size-12 items-center justify-center rounded-full bg-white shadow-sm text-primary mb-3">
-            <Plus className="size-5" />
-          </div>
-          <p className="font-semibold">Add New Course</p>
-          <p className="mt-1 text-sm text-muted-foreground max-w-[14rem] text-center">
-            Expand your curriculum by creating a new academic space.
-          </p>
+          <CreateCourseModal onCourseCreated={afterCourseCreated}>
+            <div className="border-2 border-dashed rounded-xl flex flex-col items-center justify-center min-h-64 bg-muted/40 hover:bg-muted/60 transition cursor-pointer">
+              <div className="flex size-12 items-center justify-center rounded-full bg-white shadow-sm text-primary mb-3">
+                <Plus className="size-5" />
+              </div>
+              <p className="font-semibold">Add New Course</p>
+              <p className="mt-1 text-sm text-muted-foreground max-w-[14rem] text-center">
+                Expand your curriculum by creating a new academic space.
+              </p>
+            </div>
+          </CreateCourseModal>
         </div>
-      </div>
+      )}
     </div>
   )
 }

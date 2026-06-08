@@ -1,5 +1,6 @@
 "use client"
 
+import Link from "next/link"
 import { Card, CardContent } from "@/components/ui/card"
 import { Users, Clock, Tag } from "lucide-react"
 
@@ -8,6 +9,7 @@ interface TeacherCourseCardProps {
   students: number
   updated: string
   category: string
+  href: string
 }
 
 export function TeacherCourseCard({
@@ -15,10 +17,12 @@ export function TeacherCourseCard({
   students,
   updated,
   category,
+  href,
 }: TeacherCourseCardProps) {
   return (
-    <Card className="overflow-hidden hover:shadow-lg transition bg-white">
-      <div className="relative h-40 bg-muted/70">
+    <Link href={href} className="block transition-transform hover:-translate-y-1">
+      <Card className="overflow-hidden hover:shadow-lg transition bg-white h-full">
+        <div className="relative h-40 bg-muted/70">
         <div className="absolute inset-0 flex items-center justify-center text-muted-foreground text-sm">
           Course Image
         </div>
@@ -46,5 +50,6 @@ export function TeacherCourseCard({
         </div>
       </CardContent>
     </Card>
+    </Link>
   )
 }

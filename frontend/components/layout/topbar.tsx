@@ -11,9 +11,22 @@ interface TopbarProps {
 export default function Topbar({ role }: TopbarProps) {
   return (
     <div className="h-16 bg-white border-b px-6 flex items-center justify-between">
-      <div className="relative w-full max-w-2xl">
+      <form
+        className="relative w-full max-w-2xl"
+        onSubmit={(e) => {
+          e.preventDefault()
+          const formData = new FormData(e.currentTarget)
+          const query = formData.get("q")
+          if (query) {
+             window.location.href = `/explore?q=${encodeURIComponent(query.toString())}`
+          } else {
+             window.location.href = `/explore`
+          }
+        }}
+      >
         <Search className="absolute left-4 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
         <Input
+          name="q"
           placeholder={
             role === "teacher"
               ? "Search courses, materials or students..."
@@ -21,7 +34,7 @@ export default function Topbar({ role }: TopbarProps) {
           }
           className="h-11 rounded-full pl-11 pr-4 bg-muted/40 border-transparent focus-visible:border-ring"
         />
-      </div>
+      </form>
 
       <div className="flex items-center gap-3 ml-6">
         <button

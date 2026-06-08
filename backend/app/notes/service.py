@@ -1,9 +1,9 @@
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
+from sqlalchemy import desc, select
 from uuid import UUID
 
 from app.notes.models import Note
-from app.notes.schemas import NoteCreate, NoteUpdate
+from app.notes.schemas import NoteCreate, NoteUpdate, note_to_read
 
 
 async def create_note(
@@ -25,11 +25,29 @@ async def create_note(
 async def get_user_notes(
     session: AsyncSession,
     user_id: UUID,
+    generated_only: bool | None = None,
+):
+    q = select(Note).where(Note.owner_id == user_id)
+    if generated_only is True:
+        q = q.where(Note.is_generated.is_(True))
+    elif generated_only is False:
+        q = q.where(Note.is_generated.is_(False))
+    result = await session.execute(q.order_by(desc(Note.created_at)))
+    return [note_to_read(n) for n in result.scalars().all()]
+
+
+async def get_note_for_user(
+    session: AsyncSession,
+    user_id: UUID,
+    note_id: UUID,
 ):
     result = await session.execute(
-        select(Note).where(Note.owner_id == user_id)
+        select(Note).where(Note.id == note_id, Note.owner_id == user_id)
     )
-    return result.scalars().all()
+    note = result.scalar_one_or_none()
+    if note is None:
+        return None
+    return note_to_read(note)
 
 
 async def update_note(

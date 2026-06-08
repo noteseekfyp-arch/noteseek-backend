@@ -1,11 +1,11 @@
-import { API_URL } from "@/config/api"
+import { API_BASE_URL } from "@/config/api"
 
 export async function loginUser(email: string, password: string) {
     const formData = new URLSearchParams()
     formData.append("username", email)
     formData.append("password", password)
 
-    const res = await fetch(`${API_URL}/auth/jwt/login`, {
+    const res = await fetch(`${API_BASE_URL}/auth/jwt/login`, {
         method: "POST",
         headers: {
             "Content-Type": "application/x-www-form-urlencoded",
@@ -20,8 +20,18 @@ export async function loginUser(email: string, password: string) {
     return res.json()
 }
 
-export async function registerUser(data: any) {
-    const res = await fetch(`${API_URL}/auth/register`, {
+export type RegisterPayload = {
+    email: string
+    password: string
+    name?: string
+    role: string
+    university?: string
+    department?: string
+    semester?: string
+}
+
+export async function registerUser(data: RegisterPayload) {
+    const res = await fetch(`${API_BASE_URL}/auth/register`, {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
@@ -37,7 +47,7 @@ export async function registerUser(data: any) {
 }
 
 export async function getCurrentUser(token: string) {
-    const res = await fetch(`${API_URL}/users/me`, {
+    const res = await fetch(`${API_BASE_URL}/users/me`, {
         headers: {
             Authorization: `Bearer ${token}`
         }

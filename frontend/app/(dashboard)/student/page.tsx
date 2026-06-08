@@ -38,6 +38,7 @@ export default function StudentDashboard() {
             semester="Semester 1 • Fall 2024"
             tag="Mathematics"
             variant="recommended"
+            href="/student/courses/1"
           />
 
           <CourseCard
@@ -47,6 +48,7 @@ export default function StudentDashboard() {
             semester="Semester 2 • Spring 2025"
             tag="Physics"
             variant="recommended"
+            href="/student/courses/1"
           />
 
           <CourseCard
@@ -56,6 +58,7 @@ export default function StudentDashboard() {
             semester="Semester 1 • Fall 2024"
             tag="Economics"
             variant="recommended"
+            href="/student/courses/1"
           />
         </div>
       </section>
@@ -92,6 +95,7 @@ export default function StudentDashboard() {
             university="MIT"
             semester="Semester 2"
             variant="trending"
+            href="/student/courses/2"
           />
 
           <CourseCard
@@ -100,6 +104,7 @@ export default function StudentDashboard() {
             university="Harvard"
             semester="Semester 1"
             variant="trending"
+            href="/student/courses/2"
           />
 
           <CourseCard
@@ -108,6 +113,7 @@ export default function StudentDashboard() {
             university="Caltech"
             semester="Semester 3"
             variant="trending"
+            href="/student/courses/2"
           />
 
           <CourseCard
@@ -116,6 +122,7 @@ export default function StudentDashboard() {
             university="Oxford"
             semester="Semester 1"
             variant="trending"
+            href="/student/courses/2"
           />
         </div>
       </section>

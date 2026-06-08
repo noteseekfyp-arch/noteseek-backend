@@ -4,6 +4,9 @@ from app.auth.backend import auth_backend
 from app.schemas.user import UserRead, UserCreate, UserUpdate
 from app.users.routes import router as protected_router
 from app.notes.routes import router as notes_router
+from app.courses.routes import router as courses_router
+from app.materials.routes import router as materials_router
+from app.ai.routes import router as ai_router
 
 api_router = APIRouter()
 
@@ -27,3 +30,6 @@ api_router.include_router(
 
 api_router.include_router(protected_router)
 api_router.include_router(notes_router)
+api_router.include_router(courses_router)
+api_router.include_router(materials_router)
+api_router.include_router(ai_router)

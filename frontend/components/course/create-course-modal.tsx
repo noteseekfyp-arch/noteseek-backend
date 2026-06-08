@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { ReactNode, useState } from "react"
 import { CopyPlus } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
@@ -16,8 +16,15 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { CourseApi } from "@/features/courses/api"
+import type { Course } from "@/types/course"
 
-export function CreateCourseModal() {
+interface CreateCourseModalProps {
+    children?: ReactNode
+    onCourseCreated?: (course: Course) => void
+}
+
+export function CreateCourseModal({ children, onCourseCreated }: CreateCourseModalProps) {
     const [open, setOpen] = useState(false)
     const [title, setTitle] = useState("")
     const [description, setDescription] = useState("")
@@ -33,20 +40,23 @@ export function CreateCourseModal() {
 
         setLoading(true)
         try {
-            // API integration to be added here
-            console.log({ title, description, university, department, semester, visibility })
-
-            // Artificial delay for UI feel
-            await new Promise(resolve => setTimeout(resolve, 800))
+            const created = await CourseApi.createCourse({
+                title,
+                description,
+                university,
+                department,
+                semester,
+                visibility,
+            })
 
             setOpen(false)
-            // Reset form
             setTitle("")
             setDescription("")
             setUniversity("")
             setDepartment("")
             setSemester("")
             setVisibility("public")
+            onCourseCreated?.(created)
         } catch (error) {
             console.error(error)
         } finally {
@@ -55,12 +65,15 @@ export function CreateCourseModal() {
     }
 
     return (
-        <>
-            <Button onClick={() => setOpen(true)}>
-                <CopyPlus className="mr-2 size-4" /> Create Course
-            </Button>
-            <Dialog open={open} onOpenChange={setOpen}>
-                <DialogContent className="sm:max-w-[500px]">
+        <Dialog open={open} onOpenChange={setOpen}>
+            <DialogTrigger asChild>
+                {children ? children : (
+                    <Button>
+                        <CopyPlus className="mr-2 size-4" /> Create Course
+                    </Button>
+                )}
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[500px]">
                     <DialogHeader>
                         <DialogTitle>Create New Course</DialogTitle>
                         <DialogDescription>
@@ -143,6 +156,5 @@ export function CreateCourseModal() {
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
-        </>
     )
 }

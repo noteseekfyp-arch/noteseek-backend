@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from uuid import UUID
 from sqlalchemy import select
@@ -7,26 +7,41 @@ from app.db.session import get_async_session
 from app.models.user import User
 from app.core.dependencies import require_role
 from app.notes import service, schemas, models
+from app.notes.schemas import note_to_read
 
 
 router = APIRouter(prefix="/notes", tags=["notes"])
 
 
-@router.post("/", response_model=schemas.NoteRead)
+@router.post("", response_model=schemas.NoteRead)
 async def create_note(
     data: schemas.NoteCreate,
     session: AsyncSession = Depends(get_async_session),
     user: User = Depends(require_role("student", "teacher", "admin")),
 ):
-    return await service.create_note(session, user.id, data)
+    note = await service.create_note(session, user.id, data)
+    return note_to_read(note)
 
 
-@router.get("/", response_model=list[schemas.NoteRead])
+@router.get("", response_model=list[schemas.NoteRead])
 async def my_notes(
+    generated_only: bool | None = Query(None),
     session: AsyncSession = Depends(get_async_session),
     user: User = Depends(require_role("student", "teacher", "admin")),
 ):
-    return await service.get_user_notes(session, user.id)
+    return await service.get_user_notes(session, user.id, generated_only=generated_only)
+
+
+@router.get("/{note_id}", response_model=schemas.NoteRead)
+async def get_note(
+    note_id: UUID,
+    session: AsyncSession = Depends(get_async_session),
+    user: User = Depends(require_role("student", "teacher", "admin")),
+):
+    note = await service.get_note_for_user(session, user.id, note_id)
+    if note is None:
+        raise HTTPException(status_code=404, detail="Note not found")
+    return note
 
 
 @router.put("/{note_id}", response_model=schemas.NoteRead)
@@ -47,7 +62,8 @@ async def update_note(
     if not note:
         raise HTTPException(status_code=404, detail="Note not found")
 
-    return await service.update_note(session, note, data)
+    updated = await service.update_note(session, note, data)
+    return note_to_read(updated)
 
 
 @router.delete("/{note_id}", status_code=status.HTTP_204_NO_CONTENT)

@@ -33,7 +33,8 @@ export default function Sidebar({ role }: SidebarProps) {
   ] as const
 
   const teacherNav = [
-    { href: "/teacher", label: "My Courses", icon: GraduationCap },
+    { href: "/teacher", label: "Dashboard", icon: LayoutDashboard },
+    { href: "/teacher/courses", label: "My Courses", icon: GraduationCap },
     { href: "/teacher/materials", label: "Upload Material", icon: Upload },
     { href: "/teacher/assignments", label: "Create Assignment", icon: FilePlus2 },
     { href: "/teacher/quizzes", label: "Create Quiz", icon: ClipboardCheck },

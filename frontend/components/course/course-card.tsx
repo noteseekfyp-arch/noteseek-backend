@@ -1,5 +1,6 @@
 "use client"
 
+import Link from "next/link"
 import { Card, CardContent } from "@/components/ui/card"
 import { Plus, Building2, CalendarDays } from "lucide-react"
 
@@ -10,6 +11,7 @@ interface CourseCardProps {
   semester: string
   tag?: string
   variant?: "recommended" | "trending"
+  href?: string
 }
 
 export default function CourseCard({
@@ -19,9 +21,10 @@ export default function CourseCard({
   semester,
   tag,
   variant = "recommended",
+  href,
 }: CourseCardProps) {
-  return (
-    <Card className="overflow-hidden hover:shadow-lg transition bg-white">
+  const content = (
+    <Card className="overflow-hidden hover:shadow-lg transition bg-white h-full">
       <div className="relative h-44 bg-muted/70">
         <div className="absolute inset-0 flex items-center justify-center text-muted-foreground text-sm">
           Course
@@ -32,13 +35,17 @@ export default function CourseCard({
           </span>
         )}
         {variant === "trending" && (
-          <button
-            type="button"
+          <div
+            role="button"
             aria-label="Add course"
             className="absolute bottom-3 right-3 size-9 rounded-full bg-white shadow flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/40 transition"
+            onClick={(e) => {
+              e.preventDefault()
+              e.stopPropagation()
+            }}
           >
             <Plus className="size-4" />
-          </button>
+          </div>
         )}
       </div>
 
@@ -63,4 +70,14 @@ export default function CourseCard({
       </CardContent>
     </Card>
   )
+
+  if (href) {
+    return (
+      <Link href={href} className="block w-full h-full">
+        {content}
+      </Link>
+    )
+  }
+
+  return content;
 }

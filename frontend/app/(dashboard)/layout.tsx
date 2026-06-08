@@ -1,3 +1,6 @@
+"use client"
+
+import { usePathname } from "next/navigation"
 import DashboardLayout from "@/components/layout/dashboard-layout"
 
 export default function Layout({
@@ -5,8 +8,8 @@ export default function Layout({
 }: {
   children: React.ReactNode
 }) {
-  // Temporary hardcoded role
-  const role: "student" | "teacher" = "student"
+  const pathname = usePathname()
+  const role = pathname?.startsWith("/teacher") ? "teacher" : "student"
 
   return <DashboardLayout role={role}>{children}</DashboardLayout>
 }
