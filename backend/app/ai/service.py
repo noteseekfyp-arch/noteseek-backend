@@ -1,17 +1,20 @@
 from __future__ import annotations
 
 import json
-import uuid
+import logging
 
 from pydantic import ValidationError
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.ai import extraction, inference, prompts
+from app.ai import extraction, indexing, inference, prompts, retrieval
+from app.ai.inference import InferenceError
 from app.ai.schemas import GenerateRequest, GenerationType, ModelOutput
 from app.courses import service as course_service
 from app.materials import service as material_service
 from app.models.user import User
 from app.notes import models as note_models
+
+logger = logging.getLogger(__name__)
 
 
 async def _resolve_materials(
@@ -38,7 +41,8 @@ async def _resolve_materials(
     return rows
 
 
-def _combine_extracted(rows: list) -> str:
+def _combine_extracted_legacy(rows: list) -> str:
+    """Fallback when RAG indexing/retrieval is unavailable."""
     chunks: list[str] = []
     for row in rows:
         text = extraction.extract_text(row.storage_path, row.filename)
@@ -51,13 +55,34 @@ def _combine_extracted(rows: list) -> str:
     return combined
 
 
+async def _build_source_context(
+    session: AsyncSession,
+    rows: list,
+    req: GenerateRequest,
+) -> str:
+    for row in rows:
+        try:
+            await indexing.ensure_indexed(session, row)
+        except Exception as exc:
+            logger.warning("RAG indexing failed for %s: %s", row.id, exc)
+
+    material_ids = [r.id for r in rows]
+    filenames = {r.id: r.filename for r in rows}
+
+    try:
+        return await retrieval.retrieve_context(session, req, material_ids, filenames)
+    except Exception as exc:
+        logger.warning("RAG retrieval failed, using legacy extraction: %s", exc)
+        return _combine_extracted_legacy(rows)
+
+
 async def generate_and_save(
     session: AsyncSession,
     user: User,
     req: GenerateRequest,
 ) -> note_models.Note:
     rows = await _resolve_materials(session, user, req)
-    combined = _combine_extracted(rows)
+    combined = await _build_source_context(session, rows, req)
 
     extra = " ".join(filter(None, [req.prompt, req.focus])).strip() or None
     system = prompts.build_system_prompt(req.type)

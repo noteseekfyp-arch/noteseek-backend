@@ -1,0 +1,30 @@
+# Frontend is its own repository (see frontend/.git → noteseek_frontend)
+frontend/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+.venv/
+venv/
+env/
+ENV/
+
+# Backend secrets & local data
+backend/.env
+backend/.env.*
+backend/uploads/
+
+# IDE / OS
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+
+# Logs & test artifacts
+*.log
+.pytest_cache/
+.coverage
+htmlcov/

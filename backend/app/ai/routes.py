@@ -45,10 +45,21 @@ async def generate_content(
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e)) from e
     except InferenceError as e:
         raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=str(e)) from e
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Generation failed: {e}",
+        ) from e
+
+    kind = note.kind or data.type.value
+    try:
+        gen_type = GenerationType(kind)
+    except ValueError:
+        gen_type = data.type
 
     return GenerateResponse(
         id=note.id,
-        title=note.title,
-        type=GenerationType(note.kind or data.type.value),
-        content=note.content,
+        title=note.title or "Generated content",
+        type=gen_type,
+        content=note.content or "",
     )

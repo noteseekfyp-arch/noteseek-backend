@@ -7,6 +7,7 @@ from fastapi import UploadFile
 from sqlalchemy import desc, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.ai import indexing as rag_indexing
 from app.courses import service as course_service
 from app.materials import models, schemas
 from app.models.user import User
@@ -61,13 +62,24 @@ async def save_upload(
     await session.commit()
     await session.refresh(row)
 
-    return schemas.MaterialRead(
+    material_read = schemas.MaterialRead(
         id=row.id,
         filename=row.filename,
         url=_material_file_url(base_url, row.id),
         course_id=row.course_id,
         uploaded_at=row.uploaded_at,
+        index_status=row.index_status,
     )
+
+    try:
+        await rag_indexing.index_material(session, row)
+        await session.refresh(row)
+        material_read.index_status = row.index_status
+    except Exception:
+        await session.refresh(row)
+        material_read.index_status = row.index_status
+
+    return material_read
 
 
 async def list_for_user(
@@ -101,6 +113,7 @@ async def list_for_user(
             url=_material_file_url(base_url, m.id),
             course_id=m.course_id,
             uploaded_at=m.uploaded_at,
+            index_status=m.index_status,
         )
         for m in rows
     ]
@@ -109,6 +122,29 @@ async def list_for_user(
 async def get_material_row(session: AsyncSession, material_id: uuid.UUID) -> models.Material | None:
     r = await session.execute(select(models.Material).where(models.Material.id == material_id))
     return r.scalar_one_or_none()
+
+
+async def reindex_material(
+    session: AsyncSession,
+    user: User,
+    material_id: uuid.UUID,
+    base_url: str,
+) -> schemas.MaterialRead:
+    row = await get_material_row(session, material_id)
+    if row is None:
+        raise LookupError("Material not found")
+    if not await can_download(session, user, row):
+        raise PermissionError("Not allowed")
+    await rag_indexing.index_material(session, row)
+    await session.refresh(row)
+    return schemas.MaterialRead(
+        id=row.id,
+        filename=row.filename,
+        url=_material_file_url(base_url, row.id),
+        course_id=row.course_id,
+        uploaded_at=row.uploaded_at,
+        index_status=row.index_status,
+    )
 
 
 async def can_download(session: AsyncSession, user: User, row: models.Material) -> bool:

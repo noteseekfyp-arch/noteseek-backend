@@ -43,14 +43,16 @@ def build_user_prompt(
     extra_instructions: str | None,
     page_range: str | None,
 ) -> str:
+    # Context is already sized by RAG retrieval; apply a safety cap only.
     source = combined_text[:MAX_SOURCE_CHARS]
     if len(combined_text) > MAX_SOURCE_CHARS:
-        source += "\n\n[Document truncated for model context — focus on the beginning.]"
+        source += "\n\n[Context truncated to fit model limits.]"
 
     parts = [f"Task: generate {gen_type.value}", ""]
     if page_range:
-        parts.append(f"Page/slide focus: {page_range}")
+        parts.append(f"Page/slide focus (already filtered when possible): {page_range}")
     if extra_instructions:
         parts.append(f"Instructions: {extra_instructions}")
+    parts.append("Use ONLY the retrieved source excerpts below.")
     parts.extend(["", "SOURCE:", source])
     return "\n".join(parts)

@@ -17,3 +17,5 @@ class Material(Base):
     owner_id = Column(UUID(as_uuid=True), ForeignKey("user.id"), nullable=False)
 
     uploaded_at = Column(DateTime(timezone=True), server_default=func.now())
+    # RAG indexing: pending | indexing | ready | failed
+    index_status = Column(String(32), nullable=False, server_default="pending", default="pending")

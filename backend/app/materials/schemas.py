@@ -10,5 +10,6 @@ class MaterialRead(BaseModel):
     url: str
     course_id: uuid.UUID | None
     uploaded_at: datetime
+    index_status: str = "pending"
 
     model_config = {"from_attributes": True}

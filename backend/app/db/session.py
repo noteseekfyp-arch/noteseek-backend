@@ -1,12 +1,16 @@
 import os
+
+from dotenv import load_dotenv
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
-from dotenv import load_dotenv
 
 load_dotenv()
 
 DATABASE_URL = os.getenv("DATABASE_URL")
 
+# Note: no asyncpg vector codec registration here — pgvector.sqlalchemy.Vector
+# handles serialization itself (text in/out). Registering the codec as well
+# breaks inserts because values are double-encoded.
 engine = create_async_engine(
     DATABASE_URL,
     echo=True,
