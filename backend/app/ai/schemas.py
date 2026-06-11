@@ -54,6 +54,49 @@ class ModelOutput(BaseModel):
             return ""
         return str(v)
 
+    @field_validator("assignment_sections", mode="before")
+    @classmethod
+    def coerce_sections(cls, v: Any) -> list[dict[str, str]]:
+        """Small local models sometimes emit sections as plain strings."""
+        if not isinstance(v, list):
+            return []
+        out: list[dict[str, str]] = []
+        for item in v:
+            if isinstance(item, dict):
+                out.append({str(k): "" if val is None else str(val) for k, val in item.items()})
+            elif isinstance(item, str):
+                out.append({"heading": item, "content": ""})
+        return out
+
+    @field_validator("flashcards", mode="before")
+    @classmethod
+    def coerce_flashcards(cls, v: Any) -> list[dict[str, str]]:
+        """Tolerate 'Term: definition' strings instead of {front, back} dicts."""
+        if not isinstance(v, list):
+            return []
+        out: list[dict[str, str]] = []
+        for item in v:
+            if isinstance(item, dict):
+                out.append({str(k): "" if val is None else str(val) for k, val in item.items()})
+            elif isinstance(item, str):
+                front, _, back = item.partition(":")
+                out.append({"front": front.strip(), "back": back.strip() or front.strip()})
+        return out
+
+    @field_validator("quiz_questions", mode="before")
+    @classmethod
+    def coerce_quiz(cls, v: Any) -> list[dict[str, Any]]:
+        """Tolerate bare question strings instead of full question dicts."""
+        if not isinstance(v, list):
+            return []
+        out: list[dict[str, Any]] = []
+        for item in v:
+            if isinstance(item, dict):
+                out.append(item)
+            elif isinstance(item, str):
+                out.append({"question": item, "options": [], "correct_index": -1, "explanation": ""})
+        return out
+
     @model_validator(mode="after")
     def fill_body_from_structured(self) -> ModelOutput:
         if self.body_markdown.strip():
@@ -83,6 +126,17 @@ class ModelOutput(BaseModel):
                 expl = q.get("explanation")
                 if expl:
                     lines.append(f"\n*Explanation:* {expl}")
+                lines.append("")
+            self.body_markdown = "\n".join(lines)
+
+        elif self.assignment_sections:
+            lines = ["# Assignment", ""]
+            for section in self.assignment_sections:
+                heading = section.get("heading") or section.get("title") or "Section"
+                content = section.get("content") or section.get("description") or ""
+                lines.append(f"## {heading}")
+                if content:
+                    lines.append(content)
                 lines.append("")
             self.body_markdown = "\n".join(lines)
 

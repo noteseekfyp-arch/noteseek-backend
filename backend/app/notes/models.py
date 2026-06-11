@@ -18,6 +18,7 @@ class Note(Base):
 
     kind = Column(String(32), nullable=True)
     is_generated = Column(Boolean, nullable=False, default=False)
+    is_published = Column(Boolean, nullable=False, default=False, server_default="false")
     source_material_ids = Column(Text, nullable=True)
     metadata_json = Column(Text, nullable=True)
 

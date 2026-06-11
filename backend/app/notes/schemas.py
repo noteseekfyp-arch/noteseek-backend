@@ -24,6 +24,7 @@ class NoteRead(BaseModel):
     course_id: UUID | None = None
     kind: str | None = None
     is_generated: bool = False
+    is_published: bool = False
     source_material_ids: list[str] = Field(default_factory=list)
     metadata: dict[str, Any] = Field(default_factory=dict)
     created_at: datetime
@@ -73,6 +74,7 @@ def note_to_read(note) -> NoteRead:
         course_id=note.course_id,
         kind=note.kind,
         is_generated=bool(note.is_generated),
+        is_published=bool(getattr(note, "is_published", False)),
         source_material_ids=note.source_material_ids,
         metadata=note.metadata_json,
         created_at=note.created_at,

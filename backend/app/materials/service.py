@@ -147,6 +147,24 @@ async def reindex_material(
     )
 
 
+async def delete_material(session: AsyncSession, user: User, material_id: uuid.UUID) -> None:
+    row = await get_material_row(session, material_id)
+    if row is None:
+        raise LookupError("Material not found")
+    if row.owner_id != user.id and user.role != "admin":
+        raise PermissionError("Only the uploader can delete this material")
+
+    storage_path = Path(row.storage_path)
+    # document_chunks rows are removed by the DB (ON DELETE CASCADE)
+    await session.delete(row)
+    await session.commit()
+
+    try:
+        storage_path.unlink(missing_ok=True)
+    except OSError:
+        pass  # DB row is gone; an orphaned file on disk is not fatal
+
+
 async def can_download(session: AsyncSession, user: User, row: models.Material) -> bool:
     if row.owner_id == user.id:
         return True

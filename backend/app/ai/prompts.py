@@ -26,6 +26,15 @@ Write clear study notes in body_markdown. Use empty arrays for unused fields."""
         return """Return ONLY one JSON object (no markdown):
 {"title":"Study guide title","body_markdown":"## Topics\\nStructured guide with headings","brief_summary":"overview","key_points":["key idea"],"flashcards":[],"quiz_questions":[],"assignment_sections":[]}
 Use empty arrays for unused fields."""
+    if gen_type == GenerationType.assignment:
+        return """Return ONLY one JSON object (no markdown):
+{"title":"Assignment title","body_markdown":"## Instructions\\nWhat students must do, deadline expectations, and submission format","brief_summary":"one sentence on what the assignment assesses","key_points":[],"flashcards":[],"quiz_questions":[],"assignment_sections":[{"heading":"Task 1: name (20 marks)","content":"Full task description: what to do, what to deliver, and how it will be graded"}]}
+You are writing a real assignment a teacher will hand to students — NOT study notes.
+Rules:
+- body_markdown: only instructions and submission guidelines. Do NOT summarize the source material in it.
+- assignment_sections: 3-5 graded tasks. Each MUST be an object with "heading" and "content" strings — never a plain string. Include marks in each heading and make tasks require applying the source material (design, explain, compare, implement).
+- flashcards and quiz_questions MUST be empty arrays.
+- key_points MUST be an empty array."""
     return """Return ONLY one JSON object with title, body_markdown, brief_summary, key_points, flashcards, quiz_questions, assignment_sections."""
 
 

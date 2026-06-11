@@ -67,6 +67,20 @@ async def reindex_material(
         raise HTTPException(status_code=400, detail=str(e)) from e
 
 
+@router.delete("/{material_id}", status_code=204)
+async def delete_material(
+    material_id: UUID,
+    session: AsyncSession = Depends(get_async_session),
+    user: User = Depends(require_role("student", "teacher", "admin")),
+):
+    try:
+        await service.delete_material(session, user, material_id)
+    except LookupError as e:
+        raise HTTPException(status_code=404, detail=str(e)) from e
+    except PermissionError as e:
+        raise HTTPException(status_code=403, detail=str(e)) from e
+
+
 @router.get("/{material_id}/file", name="download_material_file")
 async def download_material_file(
     material_id: UUID,
