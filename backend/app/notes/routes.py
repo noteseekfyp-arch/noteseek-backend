@@ -4,6 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from uuid import UUID
 from sqlalchemy import desc, select
 
+from app.courses import models as course_models
 from app.courses import service as course_service
 from app.db.session import get_async_session
 from app.models.user import User
@@ -55,15 +56,29 @@ async def my_notes(
 
 @router.get("/published", response_model=list[schemas.NoteRead])
 async def published_notes(
-    course_id: UUID,
+    course_id: UUID | None = None,
     session: AsyncSession = Depends(get_async_session),
     user: User = Depends(require_role("student", "teacher", "admin")),
 ):
-    if not await course_service.can_access_course(session, course_id, user):
-        raise HTTPException(status_code=403, detail="No access to this course")
+    """Published notes for one course, or across all the user's courses if course_id is omitted."""
+    if course_id is not None:
+        if not await course_service.can_access_course(session, course_id, user):
+            raise HTTPException(status_code=403, detail="No access to this course")
+        course_filter = models.Note.course_id == course_id
+    else:
+        if user.role == "student":
+            accessible = select(course_models.CourseEnrollment.course_id).where(
+                course_models.CourseEnrollment.student_id == user.id
+            )
+        else:
+            accessible = select(course_models.Course.id).where(
+                course_models.Course.teacher_id == user.id
+            )
+        course_filter = models.Note.course_id.in_(accessible)
+
     result = await session.execute(
         select(models.Note)
-        .where(models.Note.course_id == course_id, models.Note.is_published.is_(True))
+        .where(course_filter, models.Note.is_published.is_(True))
         .order_by(desc(models.Note.created_at))
     )
     return [note_to_read(n) for n in result.scalars().all()]
